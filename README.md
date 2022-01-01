@@ -9,6 +9,7 @@
 ## 회전부 구현
 <img width="50%" src="https://user-images.githubusercontent.com/87747013/147847476-187bebbf-0fe3-4b17-a9f0-dc0c5d3d57df.gif"/>  
 
+
 ## Progress
 
 ## About this repo
@@ -32,6 +33,8 @@ Directory|Description|
 ## System Design
 
 
+- 프로젝트 설명자료
 
+  [Notion-ROSI](https://www.notion.so/eorms6199/ROSI-8728bf2e29d44542b970c5411240b7a3)
 
 
