@@ -3,9 +3,10 @@
 
 ## System Demo
 
-<img width="50%" src="https://user-images.githubusercontent.com/87747013/147847476-187bebbf-0fe3-4b17-a9f0-dc0c5d3d57df.gif"/>  <img width="70%" src="https://user-images.githubusercontent.com/87747013/147847494-9af16f68-0eb3-485e-bc87-15e92b871add.mp4"/>
-
 [link to demo](https://user-images.githubusercontent.com/87747013/147847494-9af16f68-0eb3-485e-bc87-15e92b871add.mp4)
+
+## 회전부 구현
+<img width="50%" src="https://user-images.githubusercontent.com/87747013/147847476-187bebbf-0fe3-4b17-a9f0-dc0c5d3d57df.gif"/>  
 
 ## Progress
 
