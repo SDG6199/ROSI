@@ -33,7 +33,7 @@ Directory|Description|
 ## System Design
 
 
-- 프로젝트 설명자료
+- ROSI 기술소개서
 
   [Notion-ROSI](https://www.notion.so/eorms6199/ROSI-8728bf2e29d44542b970c5411240b7a3)
 
