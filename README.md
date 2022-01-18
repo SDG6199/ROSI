@@ -11,8 +11,10 @@
 > 주행로봇이 커쳐야할 노드의 경로를 입력하면 그대로 노드측 터닝스테이션이 회전하도록하는 알고리즘
 
 ## Motivation
-<system diagram 이미지>
 <concept 이미지>
+
+## System Architecture
+<system diagram 이미지>
 
 ## System Demo     
 [link to demo](https://user-images.githubusercontent.com/87747013/147847494-9af16f68-0eb3-485e-bc87-15e92b871add.mp4)  
@@ -32,6 +34,7 @@
 
 ## Reference
 - [Python/C API Reference Manual](https://docs.python.org/ko/3/c-api/init.html)
+- [xl430-w250 e-manual](https://emanual.robotis.com/docs/kr/dxl/x/xl430-w250/#%EC%98%81%EC%97%AD-eeprom-ram)
 - 
 
 
