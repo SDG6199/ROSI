@@ -1,11 +1,9 @@
 //initialization related to ros 
 #include "ros/ros.h"
 #include "std_msgs/Byte.h"
-//#include "std_msgs/String.h"
-//#include "dynamixel_workbench_msgs/DynamixelCommand.h"
 #include <darknet_ros_msgs/BoundingBoxes.h> 
 #include <gb_visual_detection_3d_msgs/BoundingBoxes3d.h>
-#include <python2.7/Python.h>   
+#include <python2.7/Python.h>       //python모듈을 c에서 사용하기 위한 c api.
 //#include <thread>
 #include <boost/thread/thread.hpp>  //use thread in ros
 
@@ -47,6 +45,7 @@ std_msgs::Byte savetag;
 std_msgs::Byte direction_roi;
 std_msgs::Byte pole_angle;
 
+//pole의 tag정보를 subscribe한다.
 void pole1_callback(const std_msgs::Byte::ConstPtr& msg)
 {
     if (msg->data==1){pole_tag=1;}
@@ -67,28 +66,28 @@ void pole4_callback(const std_msgs::Byte::ConstPtr& msg)
     if (msg->data==1){pole_tag=4;}
     else{pole_tag=0;}
 }
-/*
-template<typename T>
-std::string getType(T) {
-    std::string type = "unknown";
-    if (std::is_same<T, int>::value) type = "int";
-    if (std::is_same<T, double>::value) type = "double";
-    if (std::is_same<T, float>::value) type = "float";
-    if (std::is_same<T, bool>::value) type = "bool";
-    if (std::is_same<T, std::string>::value) type = "string";
 
-    return type;
-}
+// template<typename T>
+// std::string getType(T) {
+//     std::string type = "unknown";
+//     if (std::is_same<T, int>::value) type = "int";
+//     if (std::is_same<T, double>::value) type = "double";
+//     if (std::is_same<T, float>::value) type = "float";
+//     if (std::is_same<T, bool>::value) type = "bool";
+//     if (std::is_same<T, std::string>::value) type = "string";
+//     return type;
+// }
+// std::cout<<getType(detected_bboxes_[i].Class)<<std::endl;
 
-std::cout<<getType(detected_bboxes_[i].Class)<<std::endl;
-*/
+//뎁스카메라로부터 bbox 정보를 subscribe한다.
 void detect_box(const gb_visual_detection_3d_msgs::BoundingBoxes3d::ConstPtr& msg)
 {
-    detected_bboxes_ = msg->bounding_boxes;  //BoundingBox3d[]. 즉, array형태이다.
+    detected_bboxes_ = msg->bounding_boxes; 
     int size =detected_bboxes_.size();
     std::string element_to_check_car="car";
     std::string element_to_check_plastic_man="plastic_man";
-    
+
+    //프레임에 "car" or "plastic_man"객체가 인식되었는지 확인한다.
     for(int i=0;i<size;i++)
     {
         detected_bboxes_class_.insert(detected_bboxes_class_.begin() + i, detected_bboxes_[i].Class);
@@ -101,37 +100,38 @@ void detect_box(const gb_visual_detection_3d_msgs::BoundingBoxes3d::ConstPtr& ms
             plastic_man_box= detected_bboxes_[i];
         }
     }
-  
     if (any_of(detected_bboxes_class_.begin(), detected_bboxes_class_.end(), [&](const std::string& elem) { return elem == element_to_check_car; })) 
     {
-        //printf("%s is present in the vector\n", element_to_check_car.c_str());
         is_car=true;
     }
     else
     {
-        //printf("%s isn't present in the vector\n", element_to_check_car.c_str());
         is_car=false;
-//        car_box.xmax=0; car_box.xmin=0;
-//        car_box.ymax=0; car_box.ymin=0;  
-//        car_box.zmax=0; car_box.zmin=0; 
+        //car_box 초기화
+        car_box.xmax=0; car_box.xmin=0;
+        car_box.ymax=0; car_box.ymin=0;  
+        car_box.zmax=0; car_box.zmin=0; 
     }
 
     if (any_of(detected_bboxes_class_.begin(), detected_bboxes_class_.end(), [&](const std::string& elem) { return elem == element_to_check_plastic_man; })) 
     {
-        //printf("%s is present in the vector\n", element_to_check_plastic_man.c_str());
         is_plastic_person=true;
     }
     else
     {
-        //printf("%s isn't present in the vector\n", element_to_check_plastic_man.c_str());
         is_plastic_person=false;
+        //plastic_man_box 초기화
+        plastic_man_box.xmax=0; plastic_man_box.xmin=0;
+        plastic_man_box.ymax=0; plastic_man_box.ymin=0;  
+        plastic_man_box.zmax=0; plastic_man_box.zmin=0; 
     }
-
+    //detected_bboxes_class_ clear.
     for(int i=0;i<size;i++)
     {
         detected_bboxes_class_.erase(detected_bboxes_class_.begin() + i);
     }
 }
+//객체가 tolerrance내에 있는지 확인한다.
 bool pix_in_tor(std::vector<double> pix, std::vector<double> prev, std::vector<double> tor)
 {
     std::vector<double> tor_plus(3,0);
@@ -149,6 +149,7 @@ bool pix_in_tor(std::vector<double> pix, std::vector<double> prev, std::vector<d
     }
     return is_pix_in_tor;
 }
+//savetag를 항상 publish하는 thread함수이다. 
 void thread_save_mode()  
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
@@ -160,7 +161,7 @@ void thread_save_mode()
         loop_rate.sleep();
     }
 }
-
+//pole angle와 direction_roi를 항상 publish하는 thread함수이다. 
 void thread_pole_angle()
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
@@ -173,10 +174,10 @@ void thread_pole_angle()
     ros::Rate loop_rate(30);
     while(ros::ok())
     {   
+        //pole angle 2개를 항상 publish한다.
         for(int i=0; i<2; i++)
         {
             pole_angle.data=pole_angle_arr[i];
-
             switch(pole_num_arr[i])  
             {
                 case 2:   
@@ -197,24 +198,25 @@ void thread_pole_angle()
         loop_rate.sleep();
     } 
 }
-void thread_pole_num()  //path_vec의 2요소씩 검사.
+//입력된 path_vec의 요소를 2개씩 검사하여 각 array를 update한다.
+void thread_pole_num() 
 {   
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
-
     int path_index=0;
-
     ros::Rate loop_rate(30);
     while(ros::ok())
     {
+        //path_vec을 update한다.
         if(path_vec_update_flag==1)
         {
             if(path_index==path_vec.size()-1)
             {
                 path_index=0;
             }
+            //pole_num_arr이 update된다.
             pole_num_arr[0]=path_vec[path_index];
             pole_num_arr[1]=path_vec[path_index+1];
-
+            //pole_num_arr의 요소차이는 pole의 위치관계를 나타내는 pole_rel에 저장한다. 
             pole_rel=pole_num_arr[1]-pole_num_arr[0];
             switch(pole_rel)
             {
@@ -252,13 +254,13 @@ int main(int argc, char **argv)
         for(int i=1; i<argc; i++)
         {
             path_vec.push_back(atoi(argv[i]));
-            //std::cout << path_vec[i-1] << std::endl;
         }
     }
     else
     {
         ROS_ERROR("Enter a number of points 2 or more. \n\n");
     }
+
     ros::init(argc, argv, "mobile");
     //ros::NodeHandle n; 
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
