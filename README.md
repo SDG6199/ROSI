@@ -22,19 +22,14 @@ Directory|Description|
 ---|---|
 ---|---|
 
-## Idea
-
 ## (사용된 기술)
 
 ## (사용된 기술)
-
-## Data Generation (model생성)
 
 ## System Design
 
-
-- ROSI 기술소개서
-
-  [Notion-ROSI](https://www.notion.so/eorms6199/ROSI-8728bf2e29d44542b970c5411240b7a3)
+## Reference
+- [Python/C API Reference Manual](https://docs.python.org/ko/3/c-api/init.html)
+- [ROSI 기술소개서](https://www.notion.so/eorms6199/ROSI-8728bf2e29d44542b970c5411240b7a3)
 
 
