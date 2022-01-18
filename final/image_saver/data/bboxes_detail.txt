@@ -1,0 +1,13 @@
+ DEBUG=1 
+net.optimized_memory = 0 
+mini_batch = 1, batch = 1, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+
+ seen 64, trained: 32013 K-images (500 Kilo-batches_64) 
+Enter Image Path:  Detection layer: 82 - type = 28 
+ Detection layer: 94 - type = 28 
+ Detection layer: 106 - type = 28 
+/home/sdg/catkin_ws/src/image_saver/image/car_image/captured car1.jpg: Predicted in 2557.217000 milli-seconds.
+remote: 44%	(left_x:   51   top_y:   42   width:  201   height:  290)
+Enter Image Path: 

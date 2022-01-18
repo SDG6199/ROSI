@@ -1,0 +1,19 @@
+1. EDSR_x3 OpenCV 3.4.2이상이여야해서 python3로 실행해야 함.
+
+EDSR_x3.pb설치
+
+Can't open "models/EDSR_x3.pb" in function 'ReadProtoFromBinaryFile':
+//
+
+
+
+import dnn_superres안될 때:
+//https://stackoverflow.com/questions/61159469/importerror-cannot-import-name-dnn-superres-for-python-example-of-super-resol
+
+
+2. frozen_east_text_detection OpenCV 3.4.2이상이여야해서 python3로 실행해야 함.
+
+frozen_east_text_detection.pb 설치
+:https://stackoverflow.com/questions/59954551/cant-open-frozen-east-text-detection-pb-in-function-c
+TEXT위치 찾기, OCR
+:https://laheepapa.tistory.com/72

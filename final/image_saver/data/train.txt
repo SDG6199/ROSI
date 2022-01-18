@@ -1,0 +1,1 @@
+/home/sdg/catkin_ws/src/image_saver/image/car_image/captured car1.jpg
