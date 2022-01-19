@@ -7,7 +7,7 @@
 
 int count=1;
 
-class ImageConverter
+class MakeTrainingSet
 {
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
@@ -16,27 +16,27 @@ class ImageConverter
   cv::Mat img;
 
   public:
-    ImageConverter(): it_(nh_)      //it_에 nh_을 대입한다. 
+    MakeTrainingSet(): it_(nh_)      //it_에 nh_을 대입한다. 
     {
-      image_sub_ = it_.subscribe("/camera/color/image_raw", 1, &ImageConverter::imageCb, this);
+      image_sub_ = it_.subscribe("/camera/color/image_raw", 1, &MakeTrainingSet::imageCb, this);
     }
 
     void imageCb(const sensor_msgs::ImageConstPtr& msg)
     {
       cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
       img=cv_ptr->image;
       char buff[256];
-      sprintf(buff,"//home/sdg/catkin_ws/src/make_training_set/dataset/num%d.jpg",count);
+      sprintf(buff,"/home/sdg/catkin_ws/src/make_training_set/dataset/num%d.jpg",count);
       cv::imwrite(buff,img);
-      count++;       
+      count++;
+      ros::Duration(0.1).sleep();
     }
 };
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "make_training_set");
-  ImageConverter ic;
+  MakeTrainingSet ic;
   
   ros::spin();
   return 0;
