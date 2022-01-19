@@ -1,4 +1,3 @@
-//initialization related to ros 
 #include "ros/ros.h"
 #include "std_msgs/Byte.h"
 #include <darknet_ros_msgs/BoundingBoxes.h> 
@@ -288,7 +287,7 @@ int main(int argc, char **argv)
 
     Py_Initialize();
     PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append(\"/home/jelly/catkin_ws/src/rosi_controller/script\")");
+    PyRun_SimpleString("sys.path.append(\"/home/sdg/catkin_ws/src/rosi_controller/script\")");
     pArgs = PyTuple_New(2);
 
     pName = PyUnicode_FromString("velocity_mode_read_status");  //PyObject 생성.
@@ -303,7 +302,6 @@ int main(int argc, char **argv)
     boost::thread t1(thread_save_mode);
     boost::thread t2(thread_pole_angle);
     boost::thread t3(thread_pole_num);
-    
     
     /*
     pValue = PyObject_CallObject(GET_STATUS, NULL);
@@ -332,56 +330,56 @@ int main(int argc, char **argv)
         {
 	        ROS_INFO("pole1_taged! \n");
             under_sensor_time=ros::Time::now();
-            path_vec_update_flag=1;
+            path_vec_update_flag=1;                              //경로를 update한다.
 
             PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(0));
-            PyObject_CallObject(SET_VEL, pArgs); 
-            turn_time.sleep();  //10초 대기
+            PyObject_CallObject(SET_VEL, pArgs);                 //터닝스테이션내에서 정지한다.
+            turn_time.sleep();  
             pValue = PyObject_CallObject(GET_STATUS, NULL);
             prev_pos = PyLong_AsLong(pValue);
             prev_pos_rad = prev_pos*to_rad_coef;
 
             pole_tag_flag=0;
         }
-        else if(pole_tag==2 && pole_tag_flag==1)  //도착시 정지.
+        else if(pole_tag==2 && pole_tag_flag==1) 
         {
 	        ROS_INFO("pole2_taged! \n");
             under_sensor_time=ros::Time::now();
-            path_vec_update_flag=1;
+            path_vec_update_flag=1;                              //경로를 update한다.
 
             PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(0));
             PyObject_CallObject(SET_VEL, pArgs); 
-            turn_time.sleep();  //10초 대기
-            pValue = PyObject_CallObject(GET_STATUS, NULL);
+            turn_time.sleep(); 
+            pValue = PyObject_CallObject(GET_STATUS, NULL);      //터닝스테이션내에서 정지한다.
             prev_pos = PyLong_AsLong(pValue);
             prev_pos_rad = prev_pos*to_rad_coef;
 
             pole_tag_flag=0;
         }
-        else if(pole_tag==3 && pole_tag_flag==1)  //도착시 정지.
+        else if(pole_tag==3 && pole_tag_flag==1)  
         {
 	        ROS_INFO("pole3_taged! \n");
             under_sensor_time=ros::Time::now();
-            path_vec_update_flag=1;
+            path_vec_update_flag=1;                              //경로를 update한다.
 
             PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(0));
-            PyObject_CallObject(SET_VEL, pArgs); 
-            turn_time.sleep();  //10초 대기
+            PyObject_CallObject(SET_VEL, pArgs);                 //터닝스테이션내에서 정지한다.
+            turn_time.sleep();  
             pValue = PyObject_CallObject(GET_STATUS, NULL);
             prev_pos = PyLong_AsLong(pValue);
             prev_pos_rad = prev_pos*to_rad_coef;
 
             pole_tag_flag=0;
         }
-        else if(pole_tag==4 && pole_tag_flag==1)  //도착시 정지.
+        else if(pole_tag==4 && pole_tag_flag==1)  
         {
 	        ROS_INFO("pole4_taged! \n");
             under_sensor_time=ros::Time::now();
-            path_vec_update_flag=1;
+            path_vec_update_flag=1;                              //경로를 update한다.
 
             PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(0));
-            PyObject_CallObject(SET_VEL, pArgs); 
-            turn_time.sleep();  //10초 대기
+            PyObject_CallObject(SET_VEL, pArgs);                 //터닝스테이션내에서 정지한다.
+            turn_time.sleep();  
             pValue = PyObject_CallObject(GET_STATUS, NULL);
             prev_pos = PyLong_AsLong(pValue);
             prev_pos_rad = prev_pos*to_rad_coef;
@@ -392,25 +390,25 @@ int main(int argc, char **argv)
         {
             //default 
             PyTuple_SetItem(pArgs, 0, PyLong_FromLong(motor_velocity)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(-motor_velocity));
-            PyObject_CallObject(SET_VEL, pArgs);
+            PyObject_CallObject(SET_VEL, pArgs);                 //기본속도로 주행한다.
 
             if(ros::Time::now()-under_sensor_time>ros::Duration(18))
             {
-                pole_tag_flag=1;  //sensor를 벗어난지 3초가 지났을 때 켠다. 너무 짧으면 변경해야 함.@
+                pole_tag_flag=1;                                //센서를 벗어나고 일정시간 후 pole_tag_flag를 켠다.
             }
 
-            if(is_car==true && (pole_rel==1 || pole_rel==-1))
+            if(is_car==true && (pole_rel==1 || pole_rel==-1))   //횡방향에서 차량이 발견될 때
             {
-                is_car_time=ros::Time::now(); //current_time -> is_car_time으로 바꿈. @
+                is_car_time=ros::Time::now();
 
-                while(is_car_time-isnot_car_time<ros::Duration(9))
+                while(is_car_time-isnot_car_time<ros::Duration(9))  
                 {
                     PyTuple_SetItem(pArgs, 0, PyLong_FromLong(motor_velocity/2)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(-motor_velocity/2));
                     PyObject_CallObject(SET_VEL, pArgs);
-                    slow_time.sleep();      //7초 대기 
+                    slow_time.sleep();                           //7초 대기 
                     PyTuple_SetItem(pArgs, 0, PyLong_FromLong(0)); PyTuple_SetItem(pArgs, 1, PyLong_FromLong(0));
                     PyObject_CallObject(SET_VEL, pArgs);
-                    capture_time.sleep();   //2초 대기 
+                    capture_time.sleep();                        //2초 대기 
                     
                     //store previous pixel coordinate
                     pix_car_position[0]=(car_box.xmax+car_box.xmin)/2.0;   
@@ -421,30 +419,27 @@ int main(int argc, char **argv)
                     rate.sleep();
                     ros::spinOnce();
                 }
-
-                    stored_time=ros::Time::now();
-                
+                    stored_time=ros::Time::now(); 
                     prev_pix_car_position=pix_car_position;
-                    //printf("x: %f y: %f z: %f \n",pix_car_position[0], pix_car_position[1] ,pix_car_position[2]);    
 
                     //store previous distance
                     pValue = PyObject_CallObject(GET_STATUS, NULL);
                     pos = PyLong_AsLong(pValue);   
 
                     pos_rad = pos*to_rad_coef;      
-                    distance=(pos_rad-prev_pos_rad)*diameter_wheel*pi;    //m
-                    printf("distance %f \n",distance);
-
+                    distance=(pos_rad-prev_pos_rad)*diameter_wheel*pi;    
                     prev_distance=distance;
 
-                    savetag.data=1;
-                    state_store_flag=0;
+                    //주행로봇의 distance, 차의 상대위치와 발견된 시간을 저장했다.
+                    //tolerrance내 같은 상태에서 일정시간후 차량이 발견되면 불법주정차이다.
+                    savetag.data=1;                             //savetag는 현재의 frame을 저장하는 토픽이다.
+                    state_store_flag=0;                         //state_store_flag는 현재의 상태량을 저장하는 토픽이다.
             }
             else
             {   
                 temp_time=ros::Time::now();
 
-                if(temp_time-is_car_time>ros::Duration(1))
+                if(temp_time-is_car_time>ros::Duration(1))      //차가 안보인지 1초이상 이면
                 {
                     isnot_car_time=ros::Time::now();
                     savetag.data=0;
@@ -456,12 +451,11 @@ int main(int argc, char **argv)
                 }
             }
         }
-
         rate.sleep();
         ros::spinOnce();
     }
     
-//    PyObject_CallObject(CLEAR, NULL);
+    PyObject_CallObject(CLEAR, NULL);
     Py_Finalize();
 
     t1.join();
