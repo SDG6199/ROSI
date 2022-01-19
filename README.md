@@ -27,13 +27,13 @@
 [link to demo](https://user-images.githubusercontent.com/87747013/147847494-9af16f68-0eb3-485e-bc87-15e92b871add.mp4)  
 
 ## Tech
-- OPENCV
+- [Image Processing in OPENCV](https://docs.opencv.org/4.x/d2/d96/tutorial_py_table_of_contents_imgproc.html)
 - [Introduction to SIFT](https://docs.opencv.org/3.4/da/df5/tutorial_py_sift_intro.html)
 - [KAKAO- OCR API](https://developers.kakao.com/docs/latest/ko/vision/dev-guide#ocr)
-- 
+- [YOLOV3](https://pjreddie.com/darknet/yolo/)
 
-## Framework
-- ROS melodic
+## Environment
+- ROS melodic, OPENCV3.2.0
 ## How to use?
 - Remote PC
 > roscore 
@@ -47,6 +47,7 @@
 - Pole
 > rosrun rosserial_arduino serial_node.py _port:=/dev/ttyUSB0 _baud:=57600
 > 
+> roslaunch dynamixel_workbench_controllers dynamixel_controllers.launch
 ## Reference
 - [Python/C API Reference Manual](https://docs.python.org/ko/3/c-api/init.html)
 - [xl430-w250 e-manual](https://emanual.robotis.com/docs/kr/dxl/x/xl430-w250/#%EC%98%81%EC%97%AD-eeprom-ram)
