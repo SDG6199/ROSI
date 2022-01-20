@@ -45,22 +45,26 @@ void loop()
   val = digitalRead(trackingPin); // read the value of tracking module
 
   if(val==1 && (millis()-tag_old_time)>maintain_sec)
+  //태그가 되지 않고 태그가 된지 maintain_sec이후 인경우
   {
     nh.logwarn("ir not detect");
     tag_value=0;
     ir_old_time=millis();
   }
   else if(val==0) 
+  //태그가 될 경우
   {
     nh.logwarn("ir detect");
     tag_old_time=millis(); 
   }
   if(millis()>ir_old_time+react_sec)
+  //태그가 된 react_sec후에 반응
   {
     tag_value=1;
   }
 
   if(millis()-old_time>=1)
+  //1초 동안 publish
   {
     msg.data=tag_value;
     pole4_tag_pub.publish(&msg);

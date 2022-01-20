@@ -1,5 +1,3 @@
-// pole1 tag_lee
-
 #include <ros.h>
 #include <std_msgs/Byte.h>
 
