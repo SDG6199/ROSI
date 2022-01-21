@@ -25,7 +25,7 @@ class ImageSaver
   ros::Subscriber buzzer_stop_sub_;
     
   public:
-    ImageSaver(): it_(n_)      //it_에 nh_을 대입한다. 
+    ImageSaver(): it_(n_)      //it_에 n_를 대입한다. 
     {
       image_sub_ = it_.subscribe("/camera/color/image_raw", 1, &ImageSaver::imageCb, this, image_transport::TransportHints("compressed"));  //멤버함수를 가리키는 함수 포인터는 &ImageSaver::imageCb로 쓴다. 
       save_sub = nh_->subscribe("/image_save_tag",1, &ImageSaver::savetag,this);

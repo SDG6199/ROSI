@@ -26,16 +26,8 @@ contour_stop_tag=0
 #################################################################################################################################
 # OCR (kakao API)
 def kakao_ocr_resize(image_path: str):
-    """
-    ocr detect/recognize api helper
-    ocr api의 제약사항이 넘어서는 이미지는 요청 이전에 전처리가 필요.
+    #pixel 제약사항 초과한 경우
 
-    pixel 제약사항 초과: resize
-    용량 제약사항 초과  : 다른 포맷으로 압축, 이미지 분할 등의 처리 필요. (예제에서 제공하지 않음)
-
-    :param image_path: 이미지파일 경로
-    :return:
-    """
     image = cv2.imread(image_path)
     height, width, _ = image.shape
 
@@ -52,11 +44,6 @@ def kakao_ocr_resize(image_path: str):
     return None
 
 def kakao_ocr(img, appkey: str):
-    """
-    OCR api request example
-    :param image_path: 이미지파일 경로
-    :param appkey: 카카오 앱 REST API 키 : 
-    """
     API_URL = 'https://dapi.kakao.com/v2/vision/text/ocr'
 
     headers = {'Authorization': 'KakaoAK {}'.format(appkey)}
@@ -70,18 +57,14 @@ def kakao_ocr(img, appkey: str):
 def OCR(img,img_out):
     
     global pkg_path, captured_car_count, contour_stop_tag
-
+    appkey = '044b56485798917360446407e2a48104'
     #buffer=pkg_path+"/image/plate_cut_image/plate_cut_image"+str(captured_car_count)+".jpg"
     #image_path=buffer
-    appkey = '044b56485798917360446407e2a48104'
-
     #resize_impath = kakao_ocr_resize(image_path)
     #if resize_impath is not None:
     #    image_path = resize_impath
     #    print("원본 대신 리사이즈된 이미지를 사용합니다.")
-
     output = kakao_ocr(img, appkey).json()
-
     #print("{}".format(json.dumps(output, sort_keys=True, indent=2,ensure_ascii=False)))
         
     if len(output["result"])==0:
@@ -94,12 +77,17 @@ def OCR(img,img_out):
         print("{}".format(result))
 
         if len(result)==8:
+            #인식된 글자가 8개이면
             #imshow_thread_arg[0]=img_out
             result=plate_arr_to_string_sum(result)
+            #json format으로부터 추출한 번호판 정보를 정렬한다.
             gui.get_string(str(result))   
+            #gui에 번호판 인식결과를 string으로 보낸다.
             gui.get_plate_img(img_out)
+            #gui에 해당 번호판 이미지 img_out를 보낸다.
             buffer=pkg_path+"/image/plate_cut_image/plate_cut_image"+str(captured_car_count)+".jpg"
             cv2.imwrite(buffer,img_out)  
+            #해당 번호판 이미지 img_out를 저장한다.
             contour_stop_tag=1           # 컨투어 검사중지
     
     else:
@@ -111,16 +99,21 @@ def OCR(img,img_out):
         print("{}".format(result))
 
         if len(result)==8:
+            #인식된 글자가 8개이면
             #imshow_thread_arg[0]=img_out
             result=plate_arr_to_string_sum(result)
+            #json format으로부터 추출한 번호판 정보를 정렬한다.
             gui.get_string(str(result))
+            #gui에 번호판 인식결과를 string으로 보낸다.
             gui.get_plate_img(img_out)
+            #gui에 해당 번호판 이미지 img_out를 보낸다.
             buffer=pkg_path+"/image/plate_cut_image/plate_cut_image"+str(captured_car_count)+".jpg"
             cv2.imwrite(buffer,img_out)  
+            #해당 번호판 이미지 img_out를 저장한다.
             contour_stop_tag=1          # 컨투어 검사중지
 
 def cal_gradi(points):
-
+    #번호판의 사각형 테두리 위쪽 두개의 좌표의 gradient를 계산한다.
     x_ls= points[:,0]
     x_ls_sorted= np.sort(x_ls)           #오름차순
     x_ls_reverse= x_ls_sorted[::-1]      #내림차순
@@ -141,6 +134,7 @@ def cal_gradi(points):
     return gradient
 
 def imshow_thread(arg_img):
+    #인식된 번호판을 출력한다. (디버깅용)
     global exit_flag
     cv2.namedWindow(OPENCV_WINDOW)
     cv2.resizeWindow(OPENCV_WINDOW, 370,200)
@@ -152,7 +146,6 @@ def imshow_thread(arg_img):
             break
     return
         
-#################################################################################################################################
 # plate cut
 def cut_plate():
     global pkg_path, captured_car_count,contour_stop_tag
@@ -160,10 +153,8 @@ def cut_plate():
     buffer=pkg_path+"/image/car_image/captured car"+str(captured_car_count)+".jpg"
 
     if os.path.exists(buffer):
+        #새로운 captured car image가 생기면
         print("captured_car_count: {0} ". format(captured_car_count))
-        ###############################################################################
-        # 화질 개선할꺼면 화질개선 코드(shell script실행 후 프로그램 종료. canny는 그다음 실행.)#
-        ###############################################################################
         
         # adaptiveThreshold로 edge detection.
         origin= cv2.imread(buffer)
@@ -181,8 +172,8 @@ def cut_plate():
             x= approx.ravel()[0]; y= approx.ravel()[1]      # 0번째 contour index(좌표).
             _x1, _y1, w, h= cv2.boundingRect(approx)        # 외접 rect의 좌표.
             area=w*h
-            if x>0 and not contour_stop_tag :  # len(approx)은 좌표의 갯수이므로 4이면 rect를 의미.
-                aspectRatio= float(w)/h     # 종횡비
+            if x>0 and not contour_stop_tag :               # len(approx)은 좌표의 갯수이므로 4이면 rect를 의미.
+                aspectRatio= float(w)/h                     # 종횡비
                 if  aspectRatio >= 0 and area<4000 and area>500:     # 필요하면 aspectRatio도 조절, 너무 큰 contour도 제거 필요.@
                     print("len: {0} x:{1} y:{2} area:{3} length:{4} aspectRatio: {5}".format(len(approx),x,y,area,cv2.arcLength(cnt, True),aspectRatio))
                     rect=cv2.minAreaRect(approx)
@@ -208,20 +199,22 @@ def cut_plate():
                         #cv2.putText(copy_out,"1",(np.int0(x_lu),np.int0(y_lu)),1,2,(255,0,0),2)
                         #cv2.putText(copy_out,"2",(np.int0(x_ru),np.int0(y_ru)),1,2,(255,0,0),2)
                         #cv2.putText(copy_out,"3",(np.int0(x_rd),np.int0(y_rd)),1,2,(255,0,0),2)
-
                     pts2=((x_rd,y_rd),(x_ld,y_ld),(x_lu,y_lu),(x_ru,y_ru)) 
                     pts2_f=np.float32(pts2)
+                    #원근변환 대상좌표
                     pts3_f=np.float32([[0,0],[w,0],[w,h],[0,h]])           
-
+                    #원근변환 목표좌표
                     mat=cv2.getPerspectiveTransform(pts2_f,pts3_f)
                     plate= cv2.warpPerspective(copy,mat,(w,h))
                     plate_out= cv2.warpPerspective(copy_out,mat,(w,h))  # 출력용
-
+                    #원근보정된 결과를 plate, plate_out에 저장한다.
                     _,num_matched_pt=sift_matching_test(plate)
+                    #plate로부터 matched point의 개수를 반환한다.
                     plate_out,_=sift_matching_test(plate_out)
-                    #cv2.imwrite(buffer,plate)  # 디버깅@
+                    #plate_out에는 matched point가 덮어쓰기 된다.
                     if num_matched_pt!=0:
-                         OCR(plate,plate_out)  
+                        #matched point가 0이 아닌 경우, OCR을 수행한다.
+                        OCR(plate,plate_out)  
         captured_car_count+=1
     else:
         contour_stop_tag=0
@@ -229,29 +222,35 @@ def cut_plate():
         time.sleep(1)
     
 plate_arr_to_string_sum_count=[0]
-now = datetime.datetime.now()
 
-def plate_arr_to_string_sum(arg_ar):  # 앞3자리(공백제외8글자)번호판 기준. 친환경차는 7글자. @
+def plate_arr_to_string_sum(arg_ar): 
+    # 앞3자리(공백제외8글자)번호판 기준으로 번호판 인식결과를 return한다.
     ret=''; ret1=''; ret2=''
     temp=arg_ar
 
     for i in range(0,len(temp)):
         ret=ret+temp[i]
-        if not temp[i].isdigit():       #(한글이면):  
+        if not temp[i].isdigit():  
+            #한글이면     
             if i==len(temp)-1:
+                #한글이고 마지막 index이면 
+                #ex) 4567 123가
                 ret1=ret[len(temp)-4:]  
                 ret2=ret[:len(temp)-4]  
             else:
                 ret1=ret
                 ret=''
-        elif i==len(temp)-1:              #(끝나면):
+        elif i==len(temp)-1:   
+            #마지막 index이면         
             ret2=ret 
 
     plate_arr_to_string_sum_count[0]=plate_arr_to_string_sum_count[0]+1   
+    now = datetime.datetime.now()
     ret=now.strftime('(%H:%M) \n')+ret1+' '+ret2  #' %Y-%m-%d %H:%M:%S'
     return ret
 
 def sift_matching_test(arg_img):
+    #SIFT알고리즘으로 특징 디스크립터를 검출한다.
     standard=cv2.imread('/home/sdg/Downloads/py_test/standard_plate.png',cv2.IMREAD_GRAYSCALE)
     return_img=arg_img.copy()
     compare=arg_img.copy()
@@ -262,30 +261,35 @@ def sift_matching_test(arg_img):
     kp2,des2=sift.detectAndCompute(gray_compare,None)
 
     bf=cv2.BFMatcher(cv2.NORM_L2,crossCheck=False)    #SIFT나 SURF는 NORM_L2, ORB나 BRIEF는 NORM_HAMMING.
-    
+    #유사도 순서대로 특정 개수의 특징점을 bf에 저장한다. 
     try: 
         matches=bf.knnMatch(des1,des2,2)
+        #des1은 queryDescriptors, des2는 trainDescriptors이다.
+        #2개의 최근접 특징점에 대해서 knn matching한다.
+        #반환된 결과는 DMatch객체 리스트로, DMatch객체는 queryDescriptors의 인덱스와 trainDescriptors의 인덱스,trainDescriptor의 이미지 인덱스(imgIdx), distance(유사도 거리)를 포함한다.
     except:
         print("Not matched.")
         return return_img, 0
-
         
-    factor=0.85  # 첫 번째 이웃의 거리가 두 번째 이웃 거리의 85% 이내인 것만 추출. 매칭 포인트의 오차범위라고 보면 됨.
+    factor=0.85  # 첫 번째 이웃의 유사도 거리가 두 번째 이웃 유사도 거리의 85% 이내인 것만 추출. 매칭된 특징점의 오차범위라고 보면 됨.
     
     if len(matches[0])!=1:   
+        #knnMatch에 성공하면
         try:
             good_matches = [first for first,second in matches if first.distance < second.distance * factor]   
         except:
             print("{}".format(matches))
-
-        dst_pts = np.int0([ kp2[m.trainIdx].pt for m in good_matches ])  # gray_compare 이미지의 매칭포인트의 좌표 추출.
+        dst_pts = np.int0([ kp2[m.trainIdx].pt for m in good_matches ]) 
+        #gray_compare 이미지의 매칭 키포인트의 좌표 추출.
         for i in dst_pts:
             return_img=cv2.circle(return_img,i,1,(255,255,0),1)
+            #매칭된 키포인트를 표시한다.
         return return_img, len(dst_pts)
+        #매칭된 키포인트가 표시된 이미지, 매칭된 키포인트 개수를 반환한다.
     else:
+        #knnMatch에 실패하면
         print("Not matched.")
         return return_img, 0
-
 
 captured_car_count=1
 exit_flag=0
@@ -302,6 +306,7 @@ OPENCV_WINDOW="Captured Plate"
 
 imshow_thread_arg=[0]
 t1 = threading.Thread(target=imshow_thread, args=(imshow_thread_arg,))
+#인식된 번호판을 출력한다.(디버깅용)
 #t1.start()
 
 gui=gui_method.GUI()

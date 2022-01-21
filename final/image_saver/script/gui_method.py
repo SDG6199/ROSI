@@ -1,7 +1,9 @@
 import cv2
 import tkinter 
 from PIL import ImageTk, Image
-from tkinter import ttk    # import tkinter 와 다른 명령이다.
+from tkinter import ttk   
+# ttk는 GUI widget을 기능과 UI로 분리하여 UI를 쉽게 변경할 수 있게한 toolkit. 
+# fontStyle_title 쓰려고 사용한다.
 from tkinter import scrolledtext
 import threading
 import time
@@ -25,7 +27,7 @@ class GUI():
     def display_window(self):
         window=tkinter.Tk()
         window.title("GUI")
-        window.geometry("960x1080+960+0")     # w,h x,y
+        window.geometry("960x1080+960+0")        # w,h x,y
         window.resizable(True, True)             # w,h
         C = tkinter.Canvas(window, bg="chocolate1", height=1080, width=1920)  #1. pale goldenrod 2.navajo white 3.chocolate1
         C.pack()

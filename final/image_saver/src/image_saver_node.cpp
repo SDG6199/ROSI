@@ -38,6 +38,7 @@ int main(int argc, char** argv)
   ImageSaver ic;
   DetectLine dl;
   boost::thread t1(check_man_illegal);
+  //check_man_illegal은 thread로 돌린다.
   ros::spin();
   return 0;
 }
@@ -115,50 +116,50 @@ void ImageSaver::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
   try
   {
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);  //받은 이미지를 opencv를 사용하기위해 변환한다.
-    //const std::string 	BGR8 = "bgr8". 채널당 8bit 메모리 할당. opencv는 bgr 채널 순서를 사용한다!
+    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8); 
     cv_ptr_bound_img = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    //받은 이미지를 opencv에 맞는 format으로 변환한다.
+    //const std::string 	BGR8 = "bgr8". 채널당 8bit 메모리 할당. opencv는 bgr 채널 순서를 사용한다!
   }
-  catch (cv_bridge::Exception& e) //toCvCopy나 toCvShared를 쓸때는 항상 이런식으로 에러를 잡아라.
+  catch (cv_bridge::Exception& e) //toCvCopy나 toCvShared를 쓸때는 항상 이런식으로 에러를 잡는다.
   {
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
   }
 
   if(image_save_tag==1 || image_save_tag==2)
+  //차가 발견되었을 때
   {
     if(cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
     {
       cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
       if(is_car==true && image_save_flag==1)
       {
-        // captured car저장.
+        //차가 발견되고 image_save_flag가 1일 때 
         char buff[256];
         int offset=5;
         cut_img=cv_ptr->image(cv::Range(car_box.ymin-offset,car_box.ymax+offset), cv::Range(car_box.xmin-offset,car_box.xmax+offset));
-        sprintf(buff,"/home/sdg/catkin_ws/src/image_saver/image/car_image/captured car%d.jpg",captured_car_count);
-        //cv::imwrite(buff,cut_img);
-        //PyObject로 py3_cut_plate의 cut_plate()의 인자로 이미지 cut_img를 직접보내면 됨.. 하지만 cross compile해야해서 어렵다.(PyObject_CallObject) @
-        
+        sprintf(buff,"/home/sdg/catkin_ws/src/image_saver/image/car_image/captured car%d.jpg",captured_car_count);        
         if(image_save_tag==1)
+        //차가 처음으로 발견될 때 
         {
           // show_cut_img.
           //cv::rectangle(cv_ptr_bound_img->image,cv::Rect(cv::Point(car_box.xmin,car_box.ymin),cv::Point(car_box.xmax,car_box.ymax)), cv::Scalar(0,0,255),2,8,0);
           //cv::putText(cv_ptr_bound_img->image,"Warning",cv::Point(car_box.xmin,car_box.ymin),5,4,cv::Scalar(0,220,255),5,8);
           show_cut_img=cv_ptr_bound_img->image(cv::Range(car_box.ymin-offset,car_box.ymax+offset), cv::Range(car_box.xmin-offset,car_box.xmax+offset));
           cv::imwrite(buff,show_cut_img);
-          //cv::imshow(OPENCV_WINDOW, show_cut_img);   
         }
         else if(image_save_tag==2)
+        //차가 불법주정차로 의심될 때 
         {
           // show_cut_img.
           //cv::rectangle(cv_ptr_bound_img->image,cv::Rect(cv::Point(car_box.xmin,car_box.ymin),cv::Point(car_box.xmax,car_box.ymax)), cv::Scalar(0,0,255),2,8,0);
           //cv::putText(cv_ptr_bound_img->image,"confirm",cv::Point(car_box.xmin,car_box.ymin),5,4,cv::Scalar(0,220,255),5,8);
           show_cut_img=cv_ptr_bound_img->image(cv::Range(car_box.ymin-offset,car_box.ymax+offset), cv::Range(car_box.xmin-offset,car_box.xmax+offset));
           cv::imwrite(buff,show_cut_img);
-          //cv::imshow(OPENCV_WINDOW, show_cut_img); 
         }
         image_save_flag=0;
+        //image_save_flag를 끈다.
         captured_car_count++; 
       }
       cv::waitKey(1);
@@ -176,6 +177,7 @@ void check_man_illegal()
   while(ros::ok())
   {   
     if(no_cross_mat.size()!=0 && is_plastic_person==true && buzzer_stop_flag==0)
+    //no_cross_mat가 존재하고 사람이 존재하고 buzzer_stop_flag가 0일 때
     {
       printf("no_cross_mat_row: %d, no_cross_mat_col: %d \n",no_cross_mat.size(), no_cross_mat[0].size());
       for(int i=0; i<no_cross_mat.size(); i++)
@@ -183,7 +185,9 @@ void check_man_illegal()
         for(int j=0; j<no_cross_mat[i].size(); j++)
         {
           float dist_illegal=calc_distance(&no_cross_mat[i][j],plastic_man_box);
-          if(dist_illegal<10.0)  //변경가능 @
+          //no_cross_mat의 각 요소와 사람과의 거리 dist_illegal를 계산한다.
+          if(dist_illegal<10.0)  //@
+          //dist_illegal가 가까우면
           {
             printf("dist_illegal: %f \n",dist_illegal);
             flag_illegal=1;
@@ -196,6 +200,7 @@ void check_man_illegal()
       {
         flag_illegal=0;
         buzzer_tag.data=1;
+        //buzzer를 울린다.
       }
     }
     buzzer_pub.publish(buzzer_tag);
@@ -204,6 +209,7 @@ void check_man_illegal()
   }
 }
 float calc_distance(Data_position *d1, darknet_ros_msgs::BoundingBox d2)
+//d1은 상대좌표, d2는 절대좌표이다.
 {
   float box_x_mean=(float)(d2.xmax+d2.xmin)/2;
   float box_y_mean=(float)(d2.ymax+d2.ymin)/2;
@@ -211,10 +217,11 @@ float calc_distance(Data_position *d1, darknet_ros_msgs::BoundingBox d2)
   float mat_pix_y=(float)ORG_Y+d1->y;
 
   float dist=sqrt(pow((mat_pix_x-box_x_mean),2)+pow((mat_pix_y-box_y_mean),2));
-  //printf("%f %f %f %f %f \n",box_x_mean, box_y_mean, mat_pix_x, mat_pix_y, dist);
+  //객체와 no_cross_mat의 요소간 거리를 계산한다.
   return dist;
 }
 void ImageSaver::buzzer_stop_cb(const std_msgs::Byte::ConstPtr& msg)
+//buzzer기능을 켤껀지 말껀지를 결정한다.
 {
   if(msg->data==0)
   {
